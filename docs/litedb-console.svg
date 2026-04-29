@@ -1,0 +1,147 @@
+<svg width="1500" height="820" viewBox="0 0 1500 820" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">LiteDB Console browser interface preview</title>
+  <desc id="desc">A warm browser database console with SQL editor, query tabs, history, result metrics, and table output.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1500" y2="820" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffe7cd"/>
+      <stop offset="0.52" stop-color="#f8edd8"/>
+      <stop offset="1" stop-color="#e6f1dc"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="120" y2="50" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2f8062"/>
+      <stop offset="1" stop-color="#214f3e"/>
+    </linearGradient>
+    <linearGradient id="orange" x1="0" y1="0" x2="120" y2="50" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#e86f3a"/>
+      <stop offset="1" stop-color="#9d3d1b"/>
+    </linearGradient>
+    <filter id="shadow" x="220" y="120" width="1100" height="620" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="28" stdDeviation="34" flood-color="#442c17" flood-opacity="0.16"/>
+    </filter>
+    <style>
+      .serif { font-family: Georgia, Times New Roman, serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      .ink { fill: #1d211c; }
+      .muted { fill: #637064; }
+      .line { stroke: rgba(29,33,28,0.14); }
+      .panel { fill: rgba(255,255,255,0.78); }
+      .soft { fill: rgba(255,255,255,0.58); }
+    </style>
+  </defs>
+
+  <rect width="1500" height="820" fill="url(#bg)"/>
+  <circle cx="245" cy="158" r="260" fill="#e86f3a" opacity="0.16"/>
+  <circle cx="1270" cy="110" r="230" fill="#2f8062" opacity="0.12"/>
+
+  <g transform="translate(212 58)">
+    <text class="serif ink" x="0" y="0" font-size="82" font-weight="700" letter-spacing="-6">
+      <tspan x="0" dy="0">LiteDB</tspan>
+      <tspan x="0" dy="70">Console</tspan>
+    </text>
+    <text class="serif muted" x="0" y="124" font-size="17">
+      <tspan x="0" dy="0">Run SQL against the embedded C++ engine.</tspan>
+      <tspan x="0" dy="27">Tabs, query history, and exports stay in your browser.</tspan>
+    </text>
+  </g>
+
+  <g transform="translate(1038 142)">
+    <rect x="0" y="0" width="110" height="38" rx="19" fill="rgba(255,255,255,0.5)" stroke="rgba(29,33,28,0.14)"/>
+    <text class="mono muted" x="23" y="24" font-size="12" font-weight="800">history</text>
+    <rect x="124" y="0" width="96" height="38" rx="19" fill="rgba(255,255,255,0.62)" stroke="rgba(29,33,28,0.14)"/>
+    <text class="mono" x="145" y="24" font-size="12" font-weight="800" fill="#2f8062">connected</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <g transform="translate(210 230)">
+      <rect class="panel line" x="0" y="0" width="510" height="545" rx="28"/>
+      <rect x="0" y="0" width="510" height="58" rx="28" fill="rgba(255,255,255,0.36)"/>
+      <line class="line" x1="0" y1="58" x2="510" y2="58"/>
+      <text class="serif muted" x="28" y="33" font-size="16" font-weight="700">SQL editor</text>
+      <text class="serif muted" x="354" y="33" font-size="14">Ctrl/Cmd + Enter</text>
+
+      <g transform="translate(24 78)">
+        <rect width="92" height="36" rx="18" fill="url(#green)"/>
+        <text class="mono" x="17" y="23" font-size="12" font-weight="800" fill="#fff8ec">Query 1</text>
+        <circle cx="72" cy="18" r="10" fill="rgba(255,255,255,0.18)"/>
+        <text class="mono" x="68" y="22" font-size="11" font-weight="800" fill="#fff8ec">x</text>
+        <circle cx="130" cy="18" r="18" fill="rgba(255,255,255,0.52)" stroke="rgba(29,33,28,0.14)"/>
+        <text class="mono ink" x="126" y="23" font-size="13" font-weight="800">+</text>
+      </g>
+
+      <line class="line" x1="0" y1="132" x2="510" y2="132"/>
+      <text class="mono ink" x="28" y="166" font-size="16" font-weight="800">CREATE TABLE people (id INT, name TEXT)</text>
+      <text class="mono ink" x="28" y="214" font-size="16" font-weight="800">INSERT INTO people VALUES (...)</text>
+      <text class="mono ink" x="28" y="262" font-size="16" font-weight="800">SELECT * FROM people WHERE id &gt;= 1</text>
+      <line class="line" x1="0" y1="420" x2="510" y2="420"/>
+
+      <g transform="translate(26 442)">
+        <rect width="98" height="40" rx="20" fill="url(#orange)"/>
+        <text class="mono" x="22" y="25" font-size="12" font-weight="800" fill="#fff8ec">Run query</text>
+        <rect x="116" width="116" height="40" rx="20" fill="#fff" stroke="rgba(29,33,28,0.14)"/>
+        <text class="mono ink" x="137" y="25" font-size="12" font-weight="800">Run selected</text>
+        <rect x="244" width="118" height="40" rx="20" fill="#fff" stroke="rgba(29,33,28,0.14)"/>
+        <text class="mono ink" x="266" y="25" font-size="12" font-weight="800">Clear result</text>
+      </g>
+
+      <g transform="translate(26 502)">
+        <rect class="soft line" width="458" height="28" rx="14"/>
+        <text class="mono" x="14" y="18" font-size="11" font-weight="800" fill="#9d3d1b">SELECT * FROM people WHERE id &gt;= 1</text>
+      </g>
+    </g>
+
+    <g transform="translate(748 230)">
+      <rect class="panel line" x="0" y="0" width="540" height="545" rx="28"/>
+      <rect x="0" y="0" width="540" height="58" rx="28" fill="rgba(255,255,255,0.36)"/>
+      <line class="line" x1="0" y1="58" x2="540" y2="58"/>
+      <text class="serif muted" x="28" y="33" font-size="16" font-weight="700">Result</text>
+      <text class="serif muted" x="458" y="33" font-size="14">SELECT 10</text>
+
+      <g transform="translate(24 78)">
+        <rect class="soft line" width="160" height="58" rx="14"/>
+        <text class="mono muted" x="14" y="20" font-size="10" font-weight="800">STATUS</text>
+        <text class="mono ink" x="14" y="42" font-size="16" font-weight="900">SELECT 10</text>
+        <rect class="soft line" x="174" width="160" height="58" rx="14"/>
+        <text class="mono muted" x="188" y="20" font-size="10" font-weight="800">ROWS</text>
+        <text class="mono ink" x="188" y="42" font-size="16" font-weight="900">10</text>
+        <rect class="soft line" x="348" width="160" height="58" rx="14"/>
+        <text class="mono muted" x="362" y="20" font-size="10" font-weight="800">COLUMNS</text>
+        <text class="mono ink" x="362" y="42" font-size="16" font-weight="900">5</text>
+      </g>
+
+      <g transform="translate(24 158)">
+        <rect width="492" height="36" rx="14" fill="#eaf2df"/>
+        <text class="mono muted" x="12" y="23" font-size="11" font-weight="900">ID</text>
+        <text class="mono muted" x="48" y="23" font-size="11" font-weight="900">NAME</text>
+        <text class="mono muted" x="218" y="23" font-size="11" font-weight="900">AGE</text>
+        <text class="mono muted" x="266" y="23" font-size="11" font-weight="900">CITY</text>
+        <text class="mono muted" x="392" y="23" font-size="11" font-weight="900">ROLE</text>
+
+        <g class="mono ink" font-size="12" font-weight="800">
+          <text x="12" y="70">10</text><text x="48" y="70">Ken Thompson</text><text x="218" y="70">81</text><text x="266" y="70">New Orleans</text><text x="392" y="70">Systems</text>
+          <text x="12" y="116">9</text><text x="48" y="116">Radia Perlman</text><text x="218" y="116">73</text><text x="266" y="116">Portsmouth</text><text x="392" y="116">Network Engineer</text>
+          <text x="12" y="162">8</text><text x="48" y="162">Tim Berners-Lee</text><text x="218" y="162">69</text><text x="266" y="162">London</text><text x="392" y="162">Web Inventor</text>
+          <text x="12" y="208">7</text><text x="48" y="208">Barbara Liskov</text><text x="218" y="208">86</text><text x="266" y="208">Los Angeles</text><text x="392" y="208">Scientist</text>
+          <text x="12" y="254">6</text><text x="48" y="254">Margaret Hamilton</text><text x="218" y="254">87</text><text x="266" y="254">Paoli</text><text x="392" y="254">Engineer</text>
+          <text x="12" y="300">5</text><text x="48" y="300">Donald Knuth</text><text x="218" y="300">86</text><text x="266" y="300">Milwaukee</text><text x="392" y="300">Scientist</text>
+        </g>
+        <g stroke="rgba(29,33,28,0.12)">
+          <line x1="0" y1="88" x2="492" y2="88"/>
+          <line x1="0" y1="134" x2="492" y2="134"/>
+          <line x1="0" y1="180" x2="492" y2="180"/>
+          <line x1="0" y1="226" x2="492" y2="226"/>
+          <line x1="0" y1="272" x2="492" y2="272"/>
+        </g>
+      </g>
+
+      <line class="line" x1="0" y1="486" x2="540" y2="486"/>
+      <g transform="translate(274 505)">
+        <rect width="98" height="34" rx="17" fill="#fff" stroke="rgba(29,33,28,0.14)"/>
+        <text class="mono ink" x="19" y="22" font-size="11" font-weight="800">Export CSV</text>
+        <rect x="110" width="104" height="34" rx="17" fill="#fff" stroke="rgba(29,33,28,0.14)"/>
+        <text class="mono ink" x="128" y="22" font-size="11" font-weight="800">Export JSON</text>
+        <rect x="226" width="92" height="34" rx="17" fill="#fff" stroke="rgba(29,33,28,0.14)"/>
+        <text class="mono ink" x="247" y="22" font-size="11" font-weight="800">Copy JSON</text>
+      </g>
+    </g>
+  </g>
+</svg>

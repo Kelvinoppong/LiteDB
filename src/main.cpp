@@ -1,9 +1,29 @@
-#include <cstdio>
+#include <cstdlib>
+#include <iostream>
+#include <string>
 
-int main() {
-  // The TCP server / SQL frontend will live here once Phases 5 & 6 land.
-  // For now, this binary just prints a banner so `litedb` is buildable
-  // end-to-end while the storage layer is being developed.
-  std::puts("LiteDB: storage engine under construction.");
-  return 0;
+#include "server/tcp_server.h"
+
+int main(int argc, char* argv[]) {
+  uint16_t port = 5432;
+  if (argc > 1) {
+    port = static_cast<uint16_t>(std::stoi(argv[1]));
+  }
+  std::string db_path = "litedb.db";
+  if (argc > 2) {
+    db_path = argv[2];
+  }
+  uint16_t web_port = 8080;
+  if (argc > 3) {
+    web_port = static_cast<uint16_t>(std::stoi(argv[3]));
+  }
+
+  try {
+    litedb::server::TcpServer server(port, db_path, web_port);
+    server.start();
+  } catch (const std::exception& e) {
+    std::cerr << "Fatal: " << e.what() << "\n";
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
 }

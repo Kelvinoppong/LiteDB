@@ -8,6 +8,16 @@ static constexpr Timestamp kInfinity = std::numeric_limits<Timestamp>::max();
 
 MvccTable::MvccTable() = default;
 
+bool MvccTable::can_write_locked(const Transaction* txn, RowId row_id) const {
+  auto it = heads_.find(row_id);
+  if (it == heads_.end()) return false;
+
+  auto old_head = it->second;
+  return old_head->created_by == txn->id ||
+         !(old_head->begin_ts == kInfinity ||
+           old_head->begin_ts > txn->begin_ts);
+}
+
 RowId MvccTable::insert(Transaction* txn, std::string data) {
   std::lock_guard<std::mutex> lock(mutex_);
   RowId rid = next_row_id_.fetch_add(1);
@@ -27,13 +37,13 @@ bool MvccTable::update(Transaction* txn, RowId row_id, std::string new_data) {
   auto it = heads_.find(row_id);
   if (it == heads_.end()) return false;
 
-  auto old_head = it->second;
   // Write-write conflict: if the head was created by another active txn
-  // we cannot update it (simple first-writer-wins).
-  if (old_head->created_by != txn->id &&
-      (old_head->begin_ts == kInfinity || old_head->begin_ts > txn->begin_ts)) {
+  // or by a transaction newer than this snapshot, we cannot update it
+  // (simple first-writer-wins).
+  if (!can_write_locked(txn, row_id)) {
     return false;
   }
+  auto old_head = it->second;
 
   auto new_ver = std::make_shared<RowVersion>();
   new_ver->begin_ts = kInfinity;
@@ -52,11 +62,10 @@ bool MvccTable::remove(Transaction* txn, RowId row_id) {
   auto it = heads_.find(row_id);
   if (it == heads_.end()) return false;
 
-  auto old_head = it->second;
-  if (old_head->created_by != txn->id &&
-      (old_head->begin_ts == kInfinity || old_head->begin_ts > txn->begin_ts)) {
+  if (!can_write_locked(txn, row_id)) {
     return false;
   }
+  auto old_head = it->second;
 
   auto del_ver = std::make_shared<RowVersion>();
   del_ver->begin_ts = kInfinity;
@@ -112,6 +121,11 @@ std::vector<std::pair<RowId, std::string>> MvccTable::scan(
     }
   }
   return results;
+}
+
+bool MvccTable::can_write(const Transaction* txn, RowId row_id) const {
+  std::lock_guard<std::mutex> lock(mutex_);
+  return can_write_locked(txn, row_id);
 }
 
 void MvccTable::on_commit(Transaction* txn) {

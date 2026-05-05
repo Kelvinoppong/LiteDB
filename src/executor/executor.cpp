@@ -534,6 +534,8 @@ QueryResult Executor::exec_insert(const parser::InsertStmt& stmt,
   const auto& schema = it->second;
   auto& table = tables_.at(stmt.table_name);
 
+  std::vector<std::string> rows_to_insert;
+  rows_to_insert.reserve(stmt.rows.size());
   int count = 0;
   for (const auto& row_exprs : stmt.rows) {
     if (row_exprs.size() != schema.columns.size()) {
@@ -556,7 +558,10 @@ QueryResult Executor::exec_insert(const parser::InsertStmt& stmt,
       }
       row.push_back(std::move(value));
     }
-    std::string data = serialize_row(row, schema);
+    rows_to_insert.push_back(serialize_row(row, schema));
+  }
+
+  for (auto& data : rows_to_insert) {
     table.insert(txn, std::move(data));
     ++count;
   }
@@ -646,6 +651,7 @@ QueryResult Executor::exec_update(const parser::UpdateStmt& stmt,
   }
 
   auto all_rows = table.scan(txn);
+  std::vector<std::pair<concurrency::RowId, std::string>> pending_updates;
   int count = 0;
   for (const auto& [rid, data] : all_rows) {
     Row row = deserialize_row(data, schema);
@@ -660,7 +666,19 @@ QueryResult Executor::exec_update(const parser::UpdateStmt& stmt,
       }
       row[col_idx] = std::move(value);
     }
-    if (!table.update(txn, rid, serialize_row(row, schema))) {
+    pending_updates.emplace_back(rid, serialize_row(row, schema));
+  }
+
+  for (const auto& [rid, data] : pending_updates) {
+    if (!table.can_write(txn, rid)) {
+      r.success = false;
+      r.error = "could not update row due to write conflict";
+      return r;
+    }
+  }
+
+  for (auto& [rid, data] : pending_updates) {
+    if (!table.update(txn, rid, std::move(data))) {
       r.success = false;
       r.error = "could not update row due to write conflict";
       return r;
@@ -684,10 +702,23 @@ QueryResult Executor::exec_delete(const parser::DeleteStmt& stmt,
   auto& table = tables_.at(stmt.table_name);
 
   auto all_rows = table.scan(txn);
+  std::vector<concurrency::RowId> pending_deletes;
   int count = 0;
   for (const auto& [rid, data] : all_rows) {
     Row row = deserialize_row(data, schema);
     if (!eval_where(stmt.where.get(), row, schema)) continue;
+    pending_deletes.push_back(rid);
+  }
+
+  for (concurrency::RowId rid : pending_deletes) {
+    if (!table.can_write(txn, rid)) {
+      r.success = false;
+      r.error = "could not delete row due to write conflict";
+      return r;
+    }
+  }
+
+  for (concurrency::RowId rid : pending_deletes) {
     if (!table.remove(txn, rid)) {
       r.success = false;
       r.error = "could not delete row due to write conflict";

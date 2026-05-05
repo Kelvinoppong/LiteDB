@@ -48,6 +48,10 @@ class MvccTable {
   // Scan all visible rows for a transaction.
   std::vector<std::pair<RowId, std::string>> scan(const Transaction* txn) const;
 
+  // Returns whether `txn` may create a new version for this row without a
+  // stale-writer conflict.
+  bool can_write(const Transaction* txn, RowId row_id) const;
+
   // Called after a transaction commits to finalize version timestamps.
   void on_commit(Transaction* txn);
 
@@ -57,6 +61,7 @@ class MvccTable {
  private:
   std::shared_ptr<RowVersion> visible_version(const Transaction* txn,
                                               RowId row_id) const;
+  bool can_write_locked(const Transaction* txn, RowId row_id) const;
 
   mutable std::mutex mutex_;
   std::unordered_map<RowId, std::shared_ptr<RowVersion>> heads_;

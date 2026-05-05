@@ -207,6 +207,67 @@ TEST(Executor, ExplicitTransactionVisibility) {
   EXPECT_EQ(std::get<std::string>(after_rollback.rows[0][0]), "pending");
 }
 
+TEST(Executor, ExplicitTransactionInsertFailureIsStatementAtomic) {
+  Executor exec;
+
+  ASSERT_TRUE(
+      exec.execute(parse_sql("CREATE TABLE t (id INT, val TEXT)")).success);
+
+  auto* txn = exec.begin_transaction();
+  auto failed = exec.execute(
+      parse_sql("INSERT INTO t VALUES (1, 'ok'), ('bad-id', 'oops')"), txn);
+  EXPECT_FALSE(failed.success);
+  exec.commit_transaction(txn);
+
+  auto rows = exec.execute(parse_sql("SELECT * FROM t"));
+  ASSERT_TRUE(rows.success) << rows.error;
+  EXPECT_TRUE(rows.rows.empty());
+}
+
+TEST(Executor, ExplicitTransactionUpdateConflictIsStatementAtomic) {
+  Executor exec;
+
+  ASSERT_TRUE(
+      exec.execute(parse_sql("CREATE TABLE t (id INT, val TEXT)")).success);
+  ASSERT_TRUE(exec.execute(parse_sql(
+                    "INSERT INTO t VALUES (1, 'one'), (2, 'two'), "
+                    "(3, 'three'), (4, 'four'), (5, 'five'), (6, 'six')"))
+                  .success);
+
+  auto* stale = exec.begin_transaction();
+  auto stale_order = exec.execute(parse_sql("SELECT id FROM t"), stale);
+  ASSERT_TRUE(stale_order.success) << stale_order.error;
+  ASSERT_GE(stale_order.rows.size(), 2u);
+
+  const int64_t safe_id = std::get<int64_t>(stale_order.rows.front()[0]);
+  const int64_t conflict_id = std::get<int64_t>(stale_order.rows.back()[0]);
+
+  auto* newer = exec.begin_transaction();
+  auto newer_update = exec.execute(
+      parse_sql("UPDATE t SET val = 'newer' WHERE id = " +
+                std::to_string(conflict_id)),
+      newer);
+  ASSERT_TRUE(newer_update.success) << newer_update.error;
+  exec.commit_transaction(newer);
+
+  auto failed =
+      exec.execute(parse_sql("UPDATE t SET val = 'stale-write'"), stale);
+  EXPECT_FALSE(failed.success);
+  exec.commit_transaction(stale);
+
+  auto safe_row = exec.execute(
+      parse_sql("SELECT val FROM t WHERE id = " + std::to_string(safe_id)));
+  ASSERT_TRUE(safe_row.success) << safe_row.error;
+  ASSERT_EQ(safe_row.rows.size(), 1u);
+  EXPECT_NE(std::get<std::string>(safe_row.rows[0][0]), "stale-write");
+
+  auto conflict_row = exec.execute(parse_sql(
+      "SELECT val FROM t WHERE id = " + std::to_string(conflict_id)));
+  ASSERT_TRUE(conflict_row.success) << conflict_row.error;
+  ASSERT_EQ(conflict_row.rows.size(), 1u);
+  EXPECT_EQ(std::get<std::string>(conflict_row.rows[0][0]), "newer");
+}
+
 TEST(Executor, PersistentDatabaseSurvivesRestart) {
   ScopedDb db{TempDbPath("restart")};
 
